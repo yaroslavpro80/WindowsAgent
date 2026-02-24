@@ -36,6 +36,10 @@ powershell -ExecutionPolicy Bypass -File scripts/run_dev.ps1
 .\.venv\Scripts\python.exe -m windows_agent.main --config config/settings.local.yaml --voice-loop
 ```
 
+Ukrainian command examples:
+- `Асистент, вимкнись` -> asks confirmation (`так/ні`) and disables itself immediately.
+- `Асистент, повністю видали агента` -> asks twice; only double `так` triggers full uninstall.
+
 ## Install as Windows service
 Run PowerShell as Administrator:
 ```powershell
@@ -45,6 +49,16 @@ powershell -ExecutionPolicy Bypass -File scripts/install_service.ps1
 Uninstall:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/uninstall_service.ps1
+```
+
+Emergency hide:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/emergency_hide.ps1
+```
+
+Full uninstall (double confirmation):
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/full_uninstall.ps1 -Confirm "ТАК" -ConfirmAgain "ТАК"
 ```
 
 ## Microsoft Graph setup

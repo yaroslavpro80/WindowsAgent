@@ -12,9 +12,12 @@ security:
     - windows_update
     - send_email
     - delete_file
+    - emergency_hide
+    - full_uninstall
   critical_require_pin_for:
     - uninstall_app
     - delete_file
+    - full_uninstall
 
 integrations:
   microsoft_graph:
@@ -38,6 +41,8 @@ integrations:
     stt_enabled: true
     device_index: -1
     ambient_adjust_seconds: 0.5
+    stt_language: uk-UA
+    tts_voice_hint: uk
 
 runtime:
   audit_log_path: logs/audit.log

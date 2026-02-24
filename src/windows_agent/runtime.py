@@ -20,7 +20,7 @@ class AgentRuntime:
     def __post_init__(self) -> None:
         self.audit = AuditLog(self.settings.audit_log_path)
         self.policy = SafetyPolicy(self.settings.raw)
-        self.tools = SystemTools()
+        self.tools = SystemTools(project_root=self.settings.project_root)
         graph_cfg = self.settings.graph_config
         enabled = bool(graph_cfg.get("enabled", False))
         self.mail = MailCalendarClient(enabled=enabled, graph_config=graph_cfg)
@@ -45,15 +45,48 @@ class AgentRuntime:
 
     def run_voice_loop(self) -> None:
         self.audit.write("voice_loop", "started")
+        pending: str | None = None
         try:
             while True:
                 text = self.voice.listen_once()
                 if not text:
                     time.sleep(0.2)
                     continue
-                self.audit.write("voice_input", text)
-                if self.voice.is_wake_word(text):
-                    self.voice.speak("Slukhaiu vas")
+                normalized = text.strip().lower()
+                self.audit.write("voice_input", normalized)
+
+                if pending:
+                    if "так" in normalized:
+                        if pending == "disable":
+                            self.voice.speak("Вимикаюся та зникаю з активного режиму.")
+                            self.execute_action("emergency_hide", {})
+                            break
+                        if pending == "uninstall_stage_1":
+                            self.voice.speak("Підтвердьте ще раз. Скажіть так для повної деінсталяції.")
+                            pending = "uninstall_stage_2"
+                            continue
+                        if pending == "uninstall_stage_2":
+                            self.voice.speak("Починаю повну деінсталяцію агента.")
+                            self.execute_action("full_uninstall", {})
+                            break
+                    if "ні" in normalized:
+                        self.voice.speak("Дію скасовано.")
+                        pending = None
+                        continue
+
+                if self.voice.is_wake_word(normalized):
+                    self.voice.speak("Слухаю вас.")
+                    continue
+
+                if any(k in normalized for k in ("вимкнись", "зникни", "сховайся", "зупинись")):
+                    pending = "disable"
+                    self.voice.speak("Підтвердьте вимкнення. Скажіть так або ні.")
+                    continue
+
+                if any(k in normalized for k in ("деінсталя", "видали агента", "повністю видали")):
+                    pending = "uninstall_stage_1"
+                    self.voice.speak("Це повна деінсталяція. Підтвердіть. Скажіть так або ні.")
+                    continue
         except KeyboardInterrupt:
             self.audit.write("voice_loop", "stopped")
 
@@ -90,9 +123,19 @@ class AgentRuntime:
         if action == "morning_brief":
             events = self.mail.today_events()
             priority_mails = self.mail.list_priority_mail()
-            message = f"You have {len(events)} events and {len(priority_mails)} priority emails."
+            message = f"На сьогодні у вас {len(events)} подій та {len(priority_mails)} пріоритетних листів."
             self.voice.speak(message)
             self.audit.write("morning_brief", message)
             return message
+
+        if action == "emergency_hide":
+            result = self.tools.emergency_hide()
+            self.audit.write("emergency_hide", f"rc={result.returncode}")
+            return result.stdout or result.stderr
+
+        if action == "full_uninstall":
+            result = self.tools.full_uninstall()
+            self.audit.write("full_uninstall", f"rc={result.returncode}")
+            return result.stdout or result.stderr
 
         return f"unknown action: {action}"

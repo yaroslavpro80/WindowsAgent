@@ -11,6 +11,8 @@ class VoiceConfig:
     stt_enabled: bool
     device_index: int
     ambient_adjust_seconds: float
+    stt_language: str
+    tts_voice_hint: str
 
 
 class VoicePipeline:
@@ -23,6 +25,8 @@ class VoicePipeline:
             stt_enabled=bool(c.get("stt_enabled", True)),
             device_index=int(c.get("device_index", -1)),
             ambient_adjust_seconds=float(c.get("ambient_adjust_seconds", 0.5)),
+            stt_language=str(c.get("stt_language", "uk-UA")),
+            tts_voice_hint=str(c.get("tts_voice_hint", "uk")),
         )
         self._tts_engine = None
         self._recognizer = None
@@ -37,6 +41,7 @@ class VoicePipeline:
                 import pyttsx3
 
                 self._tts_engine = pyttsx3.init()
+                self._select_ukrainian_voice()
             except Exception:
                 self._tts_engine = None
         if self.config.stt_enabled:
@@ -56,6 +61,20 @@ class VoicePipeline:
                 self._recognizer = None
                 self._microphone = None
 
+    def _select_ukrainian_voice(self) -> None:
+        if self._tts_engine is None:
+            return
+        hint = self.config.tts_voice_hint.lower()
+        try:
+            voices = self._tts_engine.getProperty("voices")
+            for voice in voices:
+                payload = f"{voice.id} {voice.name}".lower()
+                if "uk" in payload or "ukrain" in payload or "укра" in payload or hint in payload:
+                    self._tts_engine.setProperty("voice", voice.id)
+                    return
+        except Exception:
+            return
+
     def listen_once(self) -> str:
         if not self.config.enabled or self._recognizer is None or self._microphone is None:
             return ""
@@ -65,7 +84,7 @@ class VoicePipeline:
                 audio = self._recognizer.listen(source, timeout=3, phrase_time_limit=8)
             if audio is None:
                 return ""
-            text = self._recognizer.recognize_google(audio, language="uk-UA")
+            text = self._recognizer.recognize_google(audio, language=self.config.stt_language)
             return text.strip()
         except Exception:
             return ""
