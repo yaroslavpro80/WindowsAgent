@@ -13,6 +13,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Windows Agent")
     parser.add_argument("--config", default="config/settings.local.yaml", help="Path to settings yaml")
     parser.add_argument("--action", default="", help="Optional one-shot action")
+    parser.add_argument("--voice-loop", action="store_true", help="Start voice wake-word loop")
     parser.add_argument("--package-id", default="", help="Package id for install/uninstall")
     parser.add_argument("--to", default="", help="Email recipient")
     parser.add_argument("--subject", default="", help="Email subject")
@@ -30,6 +31,11 @@ def main() -> int:
     settings = load_settings(config_path)
     runtime = AgentRuntime(settings)
     runtime.start()
+
+    if args.voice_loop:
+        runtime.run_voice_loop()
+        runtime.stop()
+        return 0
 
     if args.action:
         payload = {

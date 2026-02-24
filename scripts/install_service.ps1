@@ -4,11 +4,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$python = Resolve-Path "$VenvPath\Scripts\python.exe"
-$binPath = '"' + $python + '" -m windows_agent.service --startup auto install'
+if (-not (Test-Path "$VenvPath\Scripts\python.exe")) {
+  throw "Virtual environment not found. Run scripts/bootstrap.ps1 first."
+}
 
-sc.exe create WindowsAgentService binPath= $binPath start= auto | Out-Host
-sc.exe description WindowsAgentService "Windows Personal Agent Service" | Out-Host
-sc.exe start WindowsAgentService | Out-Host
+$python = Resolve-Path "$VenvPath\Scripts\python.exe"
+& $python -m windows_agent.service stop 2>$null
+& $python -m windows_agent.service remove 2>$null
+& $python -m windows_agent.service --startup auto install
+& $python -m windows_agent.service start
 
 Write-Host "Service installed and started."

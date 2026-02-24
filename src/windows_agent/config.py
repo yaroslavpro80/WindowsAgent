@@ -23,6 +23,14 @@ class Settings:
     def audit_log_path(self) -> Path:
         return Path(self.raw.get("runtime", {}).get("audit_log_path", "logs/audit.log"))
 
+    @property
+    def graph_config(self) -> dict[str, Any]:
+        return self.raw.get("integrations", {}).get("microsoft_graph", {})
+
+    @property
+    def voice_config(self) -> dict[str, Any]:
+        return self.raw.get("integrations", {}).get("voice", {})
+
 
 
 def load_settings(path: Path) -> Settings:

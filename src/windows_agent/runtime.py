@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -20,10 +21,11 @@ class AgentRuntime:
         self.audit = AuditLog(self.settings.audit_log_path)
         self.policy = SafetyPolicy(self.settings.raw)
         self.tools = SystemTools()
-        enabled = bool(self.settings.raw.get("integrations", {}).get("microsoft_graph", {}).get("enabled", False))
-        self.mail = MailCalendarClient(enabled=enabled)
+        graph_cfg = self.settings.graph_config
+        enabled = bool(graph_cfg.get("enabled", False))
+        self.mail = MailCalendarClient(enabled=enabled, graph_config=graph_cfg)
         wake_word = self.settings.raw.get("agent", {}).get("wake_word", "assistant")
-        self.voice = VoicePipeline(wake_word=wake_word)
+        self.voice = VoicePipeline(wake_word=wake_word, config=self.settings.voice_config)
         self.scheduler = BackgroundScheduler(timezone=self.settings.timezone)
 
     def start(self) -> None:
@@ -37,8 +39,23 @@ class AgentRuntime:
 
     def daily_digest(self) -> None:
         events = self.mail.today_events()
-        summary = f"events={len(events)}"
+        mails = self.mail.list_priority_mail()
+        summary = f"events={len(events)};priority_mail={len(mails)}"
         self.audit.write("daily_digest", summary)
+
+    def run_voice_loop(self) -> None:
+        self.audit.write("voice_loop", "started")
+        try:
+            while True:
+                text = self.voice.listen_once()
+                if not text:
+                    time.sleep(0.2)
+                    continue
+                self.audit.write("voice_input", text)
+                if self.voice.is_wake_word(text):
+                    self.voice.speak("Slukhaiu vas")
+        except KeyboardInterrupt:
+            self.audit.write("voice_loop", "stopped")
 
     def execute_action(self, action: str, payload: dict[str, str]) -> str:
         decision = self.policy.evaluate(action)
@@ -69,5 +86,13 @@ class AgentRuntime:
             )
             self.audit.write("send_email", f"ok={ok}")
             return "sent" if ok else "integration_disabled"
+
+        if action == "morning_brief":
+            events = self.mail.today_events()
+            priority_mails = self.mail.list_priority_mail()
+            message = f"You have {len(events)} events and {len(priority_mails)} priority emails."
+            self.voice.speak(message)
+            self.audit.write("morning_brief", message)
+            return message
 
         return f"unknown action: {action}"

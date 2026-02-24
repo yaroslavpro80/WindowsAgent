@@ -4,6 +4,7 @@ import servicemanager
 import win32event
 import win32service
 import win32serviceutil
+from pathlib import Path
 
 from .config import load_settings
 from .runtime import AgentRuntime
@@ -26,7 +27,7 @@ class WindowsAgentService(win32serviceutil.ServiceFramework):
         win32event.SetEvent(self.stop_event)
 
     def SvcDoRun(self):
-        settings = load_settings(__import__("pathlib").Path("config/settings.local.yaml"))
+        settings = load_settings(Path("config/settings.local.yaml"))
         self.runtime = AgentRuntime(settings)
         self.runtime.start()
         servicemanager.LogInfoMsg("WindowsAgentService started")

@@ -1,11 +1,13 @@
 # WindowsAgent
 
-Personal assistant scaffold for Windows 11 with service mode, safety policy, automation hooks, voice pipeline placeholder, and mail/calendar integration stubs.
+Personal assistant scaffold for Windows 11 with service mode, safety policy, voice wake-word loop, and Microsoft Graph mail/calendar integration.
 
 ## What is included
 - Agent runtime with scheduler and audit logging
-- Action execution (`check_updates`, `install_app`, `uninstall_app`, `send_email`)
+- Action execution (`check_updates`, `install_app`, `uninstall_app`, `send_email`, `morning_brief`)
 - Safety policy (safe/sensitive/critical)
+- Voice pipeline (STT/TTS with fallback if audio dependencies are unavailable)
+- Microsoft Graph integration (`list_priority_mail`, `today_events`, `send_email`)
 - Windows Service entrypoint (pywin32)
 - Bootstrap, run, service install/uninstall scripts
 - Config template and minimal unit test
@@ -26,6 +28,12 @@ powershell -ExecutionPolicy Bypass -File scripts/run_dev.ps1
 ```powershell
 .\.venv\Scripts\python.exe -m windows_agent.main --config config/settings.local.yaml --action check_updates
 .\.venv\Scripts\python.exe -m windows_agent.main --config config/settings.local.yaml --action install_app --package-id Telegram.TelegramDesktop
+.\.venv\Scripts\python.exe -m windows_agent.main --config config/settings.local.yaml --action morning_brief
+```
+
+## Voice loop
+```powershell
+.\.venv\Scripts\python.exe -m windows_agent.main --config config/settings.local.yaml --voice-loop
 ```
 
 ## Install as Windows service
@@ -39,16 +47,13 @@ Uninstall:
 powershell -ExecutionPolicy Bypass -File scripts/uninstall_service.ps1
 ```
 
-## GitHub
-```powershell
-git add .
-git commit -m "Initial WindowsAgent scaffold"
-git remote add origin <your-github-repo-url>
-git push -u origin main
-```
+## Microsoft Graph setup
+1. Register app in Entra ID.
+2. Grant application permissions: `Mail.Read`, `Mail.Send`, `Calendars.Read`.
+3. Fill `integrations.microsoft_graph` in `config/settings.local.yaml`.
+4. If you use delegated mailbox, set `user_principal_name`.
 
 ## Next implementation tasks
-- Replace `voice/pipeline.py` with real STT/TTS and wake word.
-- Implement OAuth + Microsoft Graph in `integrations/mail_calendar.py`.
-- Add GUI tray app for confirmations and live status.
-- Add allowlist policy for PowerShell commands and tools.
+- Add tray GUI for approvals and live status.
+- Add explicit command allowlist and human confirmation flow for sensitive actions.
+- Add plugin-based task packs (backup, browser, notes, reminders).

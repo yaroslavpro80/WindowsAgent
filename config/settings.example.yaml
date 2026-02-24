@@ -22,10 +22,22 @@ integrations:
     tenant_id: ""
     client_id: ""
     client_secret: ""
+    user_principal_name: ""
+    scopes:
+      - User.Read
+      - Mail.Read
+      - Mail.Send
+      - Calendars.Read
   azure_speech:
     enabled: false
     key: ""
     region: ""
+  voice:
+    enabled: true
+    tts_enabled: true
+    stt_enabled: true
+    device_index: -1
+    ambient_adjust_seconds: 0.5
 
 runtime:
   audit_log_path: logs/audit.log
