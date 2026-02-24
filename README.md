@@ -3,8 +3,14 @@
 Personal assistant scaffold for Windows 11 with service mode, safety policy, voice wake-word loop, and Microsoft Graph mail/calendar integration.
 
 ## Continue in next Codex session
-Use this prompt:
-`Продовжити проект WindowsAgent. Почни з docs/PROJECT_STATUS.md і docs/WINDOWS_INSTALL_CHECKLIST.md, закрий open items по пріоритету.`
+You can use any of these short prompts:
+- `Продовжити WindowsAgent`
+- `Продовж віндовс агента`
+- `Продовжити проект WindowsAgent`
+
+Expected behavior for Codex:
+- Start from `docs/PROJECT_STATUS.md` and `docs/WINDOWS_INSTALL_CHECKLIST.md`.
+- Continue top-priority open tasks without requiring full re-brief.
 
 ## What is included
 - Agent runtime with scheduler and audit logging
