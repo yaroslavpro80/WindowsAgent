@@ -1,0 +1,33 @@
+agent:
+  name: WindowsAgent
+  locale: uk-UA
+  wake_word: "асистент"
+  auto_mode: true
+
+security:
+  default_level: safe
+  require_confirmation_for:
+    - install_app
+    - uninstall_app
+    - windows_update
+    - send_email
+    - delete_file
+  critical_require_pin_for:
+    - uninstall_app
+    - delete_file
+
+integrations:
+  microsoft_graph:
+    enabled: false
+    tenant_id: ""
+    client_id: ""
+    client_secret: ""
+  azure_speech:
+    enabled: false
+    key: ""
+    region: ""
+
+runtime:
+  audit_log_path: logs/audit.log
+  app_log_path: logs/agent.log
+  timezone: Europe/Kyiv
