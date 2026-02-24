@@ -2,6 +2,10 @@
 
 Personal assistant scaffold for Windows 11 with service mode, safety policy, voice wake-word loop, and Microsoft Graph mail/calendar integration.
 
+## Continue in next Codex session
+Use this prompt:
+`Продовжити проект WindowsAgent. Почни з docs/PROJECT_STATUS.md і docs/WINDOWS_INSTALL_CHECKLIST.md, закрий open items по пріоритету.`
+
 ## What is included
 - Agent runtime with scheduler and audit logging
 - Action execution (`check_updates`, `install_app`, `uninstall_app`, `send_email`, `morning_brief`)
