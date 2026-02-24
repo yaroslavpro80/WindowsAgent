@@ -46,6 +46,23 @@ powershell -ExecutionPolicy Bypass -File scripts/run_dev.ps1
 .\.venv\Scripts\python.exe -m windows_agent.main --config config/settings.local.yaml --voice-loop
 ```
 
+## Voice-to-text app + bridge (Windows autostart)
+Installed app fallback: `VoiceMacro` (because `SayPaste` package was unavailable in winget at setup time).
+
+Configure autostart + live clipboard bridge:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install_voice_autostart.ps1
+```
+
+Disable autostart:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/uninstall_voice_autostart.ps1
+```
+
+Bridge output file:
+- `D:\Work_Cbtl\WindowsAgent\runtime\voice_inbox.txt` (latest transcript)
+- `D:\Work_Cbtl\WindowsAgent\runtime\voice_inbox.log` (history)
+
 Ukrainian command examples:
 - `Асистент, вимкнись` -> asks confirmation (`так/ні`) and disables itself immediately.
 - `Асистент, повністю видали агента` -> asks twice; only double `так` triggers full uninstall.

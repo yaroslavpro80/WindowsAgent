@@ -4,6 +4,10 @@
 - Git (`git version 2.47.0.windows.2`)
 - Python 3.12 (installed via `winget`)
 - GitHub CLI (`gh`) installed via `winget` (may require shell restart to appear in PATH)
+- VoiceMacro (`FSC-SOFT.VoiceMacro`) installed via `winget`
+- Voice bridge autostart configured:
+  - Startup shortcut: `VoiceMacro.lnk`
+  - Startup shortcut: `WindowsAgentClipboardBridge.lnk`
 
 ## Required for development/runtime
 1. Open PowerShell as Administrator.
@@ -36,4 +40,5 @@ powershell -ExecutionPolicy Bypass -File scripts/install_service.ps1
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/emergency_hide.ps1
 powershell -ExecutionPolicy Bypass -File scripts/full_uninstall.ps1 -Confirm "ТАК" -ConfirmAgain "ТАК"
+powershell -ExecutionPolicy Bypass -File scripts/uninstall_voice_autostart.ps1
 ```

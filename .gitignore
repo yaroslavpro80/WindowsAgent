@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 .env
 logs/*.log
+runtime/
 src/windows_agent.egg-info/
 config/settings.local.yaml
 .vscode/
